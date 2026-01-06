@@ -1,32 +1,52 @@
+
+````md
 # Smart Inventory Reservation System
-
-A backend system for managing inventory reservations during flash sales with concurrency safety, idempotency, and automatic expiry handling.
-
-## Architecture
-
-The system follows a clean layered architecture:
-
-- **Controllers** (`src/controllers/`) - API request/response handling
-- **Services** (`src/services/`) - Business logic and orchestration
-- **Repositories** (`src/repositories/`) - Data access layer
-
-## Features
-
-- ✅ Concurrency-safe reservations using database transactions
-- ✅ Idempotent operations (same user + SKU returns existing reservation)
-- ✅ Automatic reservation expiry (5 minutes)
-- ✅ Prevents negative inventory
-- ✅ Handles duplicate requests gracefully
-- ✅ Automatic cleanup of expired reservations
 
 ## Setup
 
 ```bash
 npm install
 npm start
+````
+
+The server will start on:
+
+```
+http://localhost:3000
 ```
 
-The server will start on `http://localhost:3000`
+---
+
+## Pages Available
+
+### 1. Home / Product Page
+
+**URL:** `/`
+
+* Displays available products
+* Shows current available quantity
+* Shows “Only X items left” indicator
+* Allows user to reserve inventory
+* Starts countdown timer after reservation
+
+---
+
+### 2. Pending Reservations Page
+
+**URL:** `/pending.html`
+
+* Displays all active (pending) reservations
+* Shows:
+
+  * User ID
+  * Reservation ID
+  * SKU
+  * Expiry time
+  * Remaining time
+* Used for admin/debug/demo purposes
+* Automatically updates as reservations expire or are cancelled
+
+---
 
 ## API Endpoints
 
@@ -36,76 +56,81 @@ The server will start on `http://localhost:3000`
 
 Reserve inventory when a user starts checkout.
 
-**Request:**
+**Request**
+
 ```json
 {
   "userId": "user-123",
   "sku": "SKU-001",
-  "quantity": 2
+  "quantity": 1
 }
 ```
 
-**Success Response (200):**
+**Success**
+
 ```json
 {
   "success": true,
-  "reservationId": "550e8400-e29b-41d4-a716-446655440000",
-  "expiresAt": "2024-01-15T10:35:00.000Z",
-  "availableQuantity": 98
+  "reservationId": "uuid",
+  "expiresAt": "2024-01-15T10:35:00Z"
 }
 ```
 
-**Idempotent Response (200):**
+**Existing Reservation (Idempotent)**
+
 ```json
 {
   "success": true,
-  "reservationId": "550e8400-e29b-41d4-a716-446655440000",
-  "message": "Existing reservation found",
-  "expiresAt": "2024-01-15T10:35:00.000Z"
+  "reservationId": "uuid",
+  "message": "Existing reservation found"
 }
 ```
 
-**Insufficient Inventory (409):**
+**Insufficient Inventory**
+
 ```json
 {
   "success": false,
-  "error": "Insufficient inventory",
-  "availableQuantity": 0
+  "error": "Insufficient inventory"
 }
 ```
 
-### 2. Confirm Reservation
+---
+
+### 2. Confirm Checkout
 
 **POST** `/checkout/confirm`
 
-Confirm a reservation if not expired.
+Confirm a reservation if it is still valid.
 
-**Request:**
+**Request**
+
 ```json
 {
-  "reservationId": "550e8400-e29b-41d4-a716-446655440000"
+  "reservationId": "uuid"
 }
 ```
 
-**Success Response (200):**
+**Success**
+
 ```json
 {
   "success": true,
-  "reservationId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Reservation confirmed"
 }
 ```
 
-**Duplicate Confirm (200):**
+**Already Confirmed**
+
 ```json
 {
   "success": true,
-  "reservationId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Reservation already confirmed"
 }
 ```
 
-**Expired Reservation (400):**
+**Expired Reservation**
+
 ```json
 {
   "success": false,
@@ -113,119 +138,71 @@ Confirm a reservation if not expired.
 }
 ```
 
-### 3. Cancel Reservation
+---
+
+### 3. Cancel Checkout
 
 **POST** `/checkout/cancel`
 
 Cancel a reservation and release inventory.
 
-**Request:**
+**Request**
+
 ```json
 {
-  "reservationId": "550e8400-e29b-41d4-a716-446655440000"
+  "reservationId": "uuid"
 }
 ```
 
-**Success Response (200):**
+**Success**
+
 ```json
 {
   "success": true,
-  "reservationId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Reservation cancelled"
 }
 ```
 
-**Duplicate Cancel (200):**
-```json
-{
-  "success": true,
-  "reservationId": "550e8400-e29b-41d4-a716-446655440000",
-  "message": "Reservation already cancelled"
-}
-```
+---
 
 ### 4. Get Inventory
 
 **GET** `/inventory/:sku`
 
-Get current available quantity for a SKU.
+Get current inventory details.
 
-**Response (200):**
+**Response**
+
 ```json
 {
-  "success": true,
-  "data": {
-    "sku": "SKU-001",
-    "totalQuantity": 100,
-    "availableQuantity": 95,
-    "reservedQuantity": 5
-  }
+  "sku": "SKU-001",
+  "totalQuantity": 100,
+  "availableQuantity": 95,
+  "reservedQuantity": 5
 }
 ```
 
-## Database Schema
+---
+
+## Database Tables
 
 ### inventory
-- `sku` (TEXT, PRIMARY KEY) - Stock Keeping Unit
-- `total_quantity` (INTEGER) - Total inventory
-- `available_quantity` (INTEGER) - Available for reservation
-- `reserved_quantity` (INTEGER) - Currently reserved
-- `created_at` (DATETIME)
-- `updated_at` (DATETIME)
+
+* `sku` (PRIMARY KEY)
+* `total_quantity`
+* `available_quantity`
+* `reserved_quantity`
+* `created_at`
+* `updated_at`
 
 ### reservations
-- `id` (TEXT, PRIMARY KEY) - UUID
-- `user_id` (TEXT) - User identifier
-- `sku` (TEXT) - Foreign key to inventory
-- `quantity` (INTEGER) - Reserved quantity
-- `status` (TEXT) - PENDING, CONFIRMED, CANCELLED, EXPIRED
-- `expires_at` (DATETIME) - Expiration timestamp
-- `created_at` (DATETIME)
-- `updated_at` (DATETIME)
 
-## Edge Cases Handled
-
-1. **Concurrent Reservations**: Database transactions prevent race conditions
-2. **Reservation Expiry**: Automatic cleanup every minute releases expired inventory
-3. **Page Refresh**: Idempotent reserve endpoint returns existing reservation
-4. **Duplicate Confirm/Cancel**: Safe to call multiple times
-5. **Negative Inventory**: Atomic updates prevent inventory from going negative
-
-## Concurrency Safety
-
-- Uses SQLite WAL mode for better concurrency
-- Atomic inventory updates with WHERE conditions
-- Transaction-based reservation creation
-- Row-level locking through WHERE clauses in UPDATE statements
-
-## Logging
-
-All operations are logged with prefixes:
-- `[RESERVE]` - Reservation attempts
-- `[CONFIRM]` - Confirmation attempts
-- `[CANCEL]` - Cancellation attempts
-- `[CLEANUP]` - Expired reservation cleanup
-
-## Testing Examples
-
-### Test Concurrent Reservations
-```bash
-# Terminal 1
-curl -X POST http://localhost:3000/inventory/reserve \
-  -H "Content-Type: application/json" \
-  -d '{"userId":"user-1","sku":"SKU-001","quantity":1}'
-
-# Terminal 2 (simultaneously)
-curl -X POST http://localhost:3000/inventory/reserve \
-  -H "Content-Type: application/json" \
-  -d '{"userId":"user-2","sku":"SKU-001","quantity":1}'
-```
-
-### Test Idempotency
-```bash
-# Same request twice
-curl -X POST http://localhost:3000/inventory/reserve \
-  -H "Content-Type: application/json" \
-  -d '{"userId":"user-1","sku":"SKU-001","quantity":1}'
-```
+* `id`
+* `user_id`
+* `sku`
+* `quantity`
+* `status` (RESERVED, CONFIRMED, CANCELLED, EXPIRED)
+* `expires_at`
+* `created_at`
+* `updated_at`
 
