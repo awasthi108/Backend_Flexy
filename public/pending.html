@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pending Reservations</title>
+  <link rel="stylesheet" href="pending.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Pending Reservations</h1>
+      <p class="subtitle">Admin / Debug view of active reservations</p>
+    </header>
+
+    <div id="status" class="status"></div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Reservation ID</th>
+            <th>SKU</th>
+            <th>Expiry Time</th>
+            <th>Time Remaining</th>
+          </tr>
+        </thead>
+        <tbody id="reservations-body">
+          <tr><td colspan="5" class="empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="pending.js"></script>
+</body>
+</html>
+

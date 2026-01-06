@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Sale - Inventory Reservation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Flash Sale</h1>
+            <p class="subtitle">Reserve your items now!</p>
+        </header>
+
+        <section class="api-list">
+            <h2>Available APIs</h2>
+            <ul>
+                <li><code>GET /health</code></li>
+                <li><code>GET /inventory/:sku</code></li>
+                <li><code>POST /inventory/reserve</code></li>
+                <li><code>POST /checkout/confirm</code></li>
+                <li><code>POST /checkout/cancel</code></li>
+            </ul>
+        </section>
+
+        <div id="message" class="message"></div>
+
+        <div id="products" class="products">
+            <!-- Products will be loaded here -->
+        </div>
+
+        <div id="reservation-info" class="reservation-info hidden">
+            <h2>Your Reservation</h2>
+            <div id="reservation-details"></div>
+            <div id="countdown" class="countdown"></div>
+            <div class="reservation-actions">
+                <button id="confirm-btn" class="btn btn-success">Confirm Purchase</button>
+                <button id="cancel-btn" class="btn btn-danger">Cancel Reservation</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
