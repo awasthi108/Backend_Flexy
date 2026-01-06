@@ -16,7 +16,6 @@ class InventoryRepository {
    */
   async upsert(sku, totalQuantity) {
     return new Promise((resolve, reject) => {
-      const { db } = require('../config/database.js');
       const stmt = `
         INSERT INTO inventory (sku, total_quantity, available_quantity, reserved_quantity)
         VALUES (?, ?, ?, 0)
@@ -106,7 +105,6 @@ class InventoryRepository {
    */
   async releaseInventory(sku, quantity) {
     return new Promise((resolve, reject) => {
-      const { db } = require('../config/database.js');
       const stmt = `
         UPDATE inventory
         SET available_quantity = available_quantity + ?,
@@ -129,7 +127,6 @@ class InventoryRepository {
    */
   async confirmReservation(sku, quantity) {
     return new Promise((resolve, reject) => {
-      const { db } = require('../config/database.js');
       const stmt = `
         UPDATE inventory
         SET reserved_quantity = reserved_quantity - ?,

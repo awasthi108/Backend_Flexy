@@ -1,4 +1,4 @@
-import { dbMethods } from '../config/database.js';
+import { dbMethods, db } from '../config/database.js';
 
 /**
  * Repository layer for reservation data access
@@ -9,7 +9,6 @@ class ReservationRepository {
    */
   async create(reservation) {
     return new Promise((resolve, reject) => {
-      const { db } = require('../config/database.js');
       const stmt = `
         INSERT INTO reservations (id, user_id, sku, quantity, status, expires_at)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -56,7 +55,6 @@ class ReservationRepository {
    */
   async updateStatus(id, status) {
     return new Promise((resolve, reject) => {
-      const { db } = require('../config/database.js');
       const stmt = `
         UPDATE reservations
         SET status = ?, updated_at = CURRENT_TIMESTAMP
@@ -104,7 +102,6 @@ class ReservationRepository {
    */
   async delete(id) {
     return new Promise((resolve, reject) => {
-      const { db } = require('../config/database.js');
       db.run('DELETE FROM reservations WHERE id = ?', [id], function(err) {
         if (err) {
           reject(err);
